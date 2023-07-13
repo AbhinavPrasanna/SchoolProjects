@@ -1,0 +1,376 @@
+#include <setjmp.h>
+#include <signal.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "Graph.h"
+#include "List.h"
+
+#define FIRST_TEST DG_getSize
+#define MAXSCORE 40
+#define CHARITY 50
+
+#define RED "\033[0;35m"
+#define CYAN "\033[0;36m"
+#define GREEN "\033[0;32m"
+#define NC "\033[0m"
+
+static uint8_t testsPassed;
+static volatile sig_atomic_t testStatus;
+static uint8_t disable_exit_handler;
+jmp_buf test_crash;
+
+enum Test_e {
+      DG_getSize = 0, // directed graph tests
+        DG_getParent,
+          DG_getDiscover,
+            DG_getFinish,
+
+              UG_getSize, // undirected graph tests
+                UG_getParent,
+                  UG_getDiscover,
+                    UG_getFinish,
+
+                      NUM_TESTS,
+};
+
+char *testName(int test) {
+
+      if (test == DG_getSize)
+              return "DG_getSize";
+        if (test == DG_getParent)
+                return "DG_getParent";
+          if (test == DG_getDiscover)
+                  return "DG_getDiscover";
+            if (test == DG_getFinish)
+                    return "DG_getFinish";
+
+              if (test == UG_getSize)
+                      return "UG_getSize";
+                if (test == UG_getParent)
+                        return "UG_getParent";
+                  if (test == UG_getDiscover)
+                          return "UG_getDiscover";
+                    if (test == UG_getFinish)
+                            return "UG_getFinish";
+
+                      return "";
+}
+
+// return 0 if pass otherwise the number of the test that was failed
+uint8_t runTest(Graph *pA, List *pL, int test) {
+      Graph A = *pA;
+        List L = *pL;
+          switch (test) {
+
+                case DG_getSize: {
+                                         if (getSize(A) != 0)
+                                                   return 5;
+                                             addArc(A, 54, 3);
+                                                 addArc(A, 54, 2);
+                                                     addArc(A, 54, 5);
+                                                         addArc(A, 54, 3);
+                                                             addArc(A, 5, 54);
+                                                                 addArc(A, 5, 54);
+                                                                     addArc(A, 5, 55);
+                                                                         addArc(A, 5, 55);
+                                                                             if (getSize(A) != 5)
+                                                                                       return 2;
+                                                                                 for (uint8_t i = 5; i <= 500; i++) {
+                                                                                           append(L, i);
+                                                                                               }
+                                                                                     DFS(A, L);
+                                                                                         if (getSize(A) != 5)
+                                                                                                   return 3;
+                                                                                             addArc(A, 55, 5);
+                                                                                                 if (getSize(A) != 6)
+                                                                                                           return 4;
+                                                                                                     return 0;
+                                                                                                       }
+                                   case DG_getParent: {
+                                                              for (uint8_t i = 5; i <= 500; i++)
+                                                                        if (getParent(A, i) != NIL)
+                                                                                    return 5;
+                                                                  addArc(A, 64, 4);
+                                                                      addArc(A, 64, 3);
+                                                                          addArc(A, 42, 2);
+                                                                              addArc(A, 2, 64);
+                                                                                  addArc(A, 4, 2);
+                                                                                      addArc(A, 3, 42);
+                                                                                          for (uint8_t i = 5; i <= 500; i++) {
+                                                                                                    append(L, i);
+                                                                                                        }
+                                                                                              DFS(A, L);
+                                                                                                  if (getParent(A, 500) != NIL)
+                                                                                                            return 2;
+                                                                                                      if (getParent(A, 2) != NIL)
+                                                                                                                return 3;
+                                                                                                          if (getParent(A, 42) != 3)
+                                                                                                                    return 4;
+                                                                                                              if (getParent(A, 3) != 64)
+                                                                                                                        return 5;
+                                                                                                                  if (getParent(A, 4) != 64)
+                                                                                                                            return 6;
+                                                                                                                      return 0;
+                                                                                                                        }
+                                                        case DG_getDiscover: {
+                                                                                     for (uint8_t i = 5; i <= 500; i++)
+                                                                                               if (getDiscover(A, i) != UNDEF)
+                                                                                                           return 5;
+                                                                                         addArc(A, 64, 4);
+                                                                                             addArc(A, 64, 3);
+                                                                                                 addArc(A, 42, 2);
+                                                                                                     addArc(A, 2, 64);
+                                                                                                         addArc(A, 4, 2);
+                                                                                                             addArc(A, 3, 42);
+                                                                                                                 for (uint8_t i = 5; i <= 500; i++) {
+                                                                                                                           prepend(L, i);
+                                                                                                                               }
+                                                                                                                     DFS(A, L);
+                                                                                                                         if (getDiscover(A, 500) != 5)
+                                                                                                                                   return 2;
+                                                                                                                             if (getDiscover(A, 64) != 73)
+                                                                                                                                       return 3;
+                                                                                                                                 if (getDiscover(A, 4) != 80)
+                                                                                                                                           return 4;
+                                                                                                                                     DFS(A, L);
+                                                                                                                                         if (getDiscover(A, 4) != 126)
+                                                                                                                                                   return 5;
+                                                                                                                                             if (getDiscover(A, 63) != 557)
+                                                                                                                                                       return 6;
+                                                                                                                                                 DFS(A, L);
+                                                                                                                                                     if (getDiscover(A, 65) != 75)
+                                                                                                                                                               return 7;
+                                                                                                                                                         if (getDiscover(A, 5) != 599)
+                                                                                                                                                                   return 8;
+                                                                                                                                                             return 0;
+                                                                                                                                                               }
+                                                                               case DG_getFinish: {
+                                                                                                          for (uint8_t i = 5; i <= 500; i++)
+                                                                                                                    if (getFinish(A, i) != UNDEF)
+                                                                                                                                return 5;
+                                                                                                              addArc(A, 64, 4);
+                                                                                                                  addArc(A, 64, 3);
+                                                                                                                      addArc(A, 42, 2);
+                                                                                                                          addArc(A, 2, 64);
+                                                                                                                              addArc(A, 4, 2);
+                                                                                                                                  addArc(A, 3, 42);
+                                                                                                                                      for (uint8_t i = 5; i <= 500; i++) {
+                                                                                                                                                prepend(L, i);
+                                                                                                                                                    }
+                                                                                                                                          DFS(A, L);
+                                                                                                                                              if (getFinish(A, 500) != 2)
+                                                                                                                                                        return 2;
+                                                                                                                                                  if (getFinish(A, 64) != 82)
+                                                                                                                                                            return 3;
+                                                                                                                                                      if (getFinish(A, 42) != 78)
+                                                                                                                                                                return 4;
+                                                                                                                                                          DFS(A, L);
+                                                                                                                                                              if (getFinish(A, 64) != 528)
+                                                                                                                                                                        return 5;
+                                                                                                                                                                  if (getFinish(A, 63) != 558)
+                                                                                                                                                                            return 6;
+                                                                                                                                                                      DFS(A, L);
+                                                                                                                                                                          if (getFinish(A, 65) != 72)
+                                                                                                                                                                                    return 7;
+                                                                                                                                                                              if (getFinish(A, 5) != 200)
+                                                                                                                                                                                        return 8;
+                                                                                                                                                                                  return 0;
+                                                                                                                                                                                    }
+                                                                                                    case UG_getSize: {
+                                                                                                                             if (getSize(A) != 0)
+                                                                                                                                       return 5;
+                                                                                                                                 addEdge(A, 54, 5);
+                                                                                                                                     addEdge(A, 54, 2);
+                                                                                                                                         addEdge(A, 54, 3);
+                                                                                                                                             addEdge(A, 5, 55);
+                                                                                                                                                 if (getSize(A) != 4)
+                                                                                                                                                           return 2;
+                                                                                                                                                     for (uint8_t i = 5; i <= 500; i++) {
+                                                                                                                                                               append(L, i);
+                                                                                                                                                                   }
+                                                                                                                                                         DFS(A, L);
+                                                                                                                                                             if (getSize(A) != 4)
+                                                                                                                                                                       return 3;
+                                                                                                                                                                 addEdge(A, 5, 56);
+                                                                                                                                                                     if (getSize(A) != 5)
+                                                                                                                                                                               return 4;
+                                                                                                                                                                         return 0;
+                                                                                                                                                                           }
+                                                                                                                       case UG_getParent: {
+                                                                                                                                                  for (uint8_t i = 5; i <= 500; i++)
+                                                                                                                                                            if (getParent(A, i) != NIL)
+                                                                                                                                                                        return 5;
+                                                                                                                                                      addEdge(A, 64, 4);
+                                                                                                                                                          addEdge(A, 64, 3);
+                                                                                                                                                              addEdge(A, 42, 2);
+                                                                                                                                                                  addEdge(A, 2, 64);
+                                                                                                                                                                      addEdge(A, 4, 2);
+                                                                                                                                                                          addEdge(A, 3, 42);
+                                                                                                                                                                              for (uint8_t i = 5; i <= 500; i++) {
+                                                                                                                                                                                        append(L, i);
+                                                                                                                                                                                            }
+                                                                                                                                                                                  DFS(A, L);
+                                                                                                                                                                                      if (getParent(A, 500) != NIL)
+                                                                                                                                                                                                return 2;
+                                                                                                                                                                                          if (getParent(A, 2) != NIL)
+                                                                                                                                                                                                    return 3;
+                                                                                                                                                                                              if (getParent(A, 42) != 3)
+                                                                                                                                                                                                        return 4;
+                                                                                                                                                                                                  if (getParent(A, 3) != 64)
+                                                                                                                                                                                                            return 5;
+                                                                                                                                                                                                      if (getParent(A, 4) != 2)
+                                                                                                                                                                                                                return 6;
+                                                                                                                                                                                                          return 0;
+                                                                                                                                                                                                            }
+                                                                                                                                            case UG_getDiscover: {
+                                                                                                                                                                         for (uint8_t i = 5; i <= 500; i++)
+                                                                                                                                                                                   if (getDiscover(A, i) != UNDEF)
+                                                                                                                                                                                               return 5;
+                                                                                                                                                                             addEdge(A, 64, 4);
+                                                                                                                                                                                 addEdge(A, 64, 3);
+                                                                                                                                                                                     addEdge(A, 42, 2);
+                                                                                                                                                                                         addEdge(A, 2, 64);
+                                                                                                                                                                                             addEdge(A, 4, 2);
+                                                                                                                                                                                                 addEdge(A, 3, 42);
+                                                                                                                                                                                                     for (uint8_t i = 5; i <= 500; i++) {
+                                                                                                                                                                                                               prepend(L, i);
+                                                                                                                                                                                                                   }
+                                                                                                                                                                                                         DFS(A, L);
+                                                                                                                                                                                                             if (getDiscover(A, 500) != 5)
+                                                                                                                                                                                                                       return 2;
+                                                                                                                                                                                                                 if (getDiscover(A, 64) != 73)
+                                                                                                                                                                                                                           return 3;
+                                                                                                                                                                                                                     if (getDiscover(A, 4) != 75)
+                                                                                                                                                                                                                               return 4;
+                                                                                                                                                                                                                         DFS(A, L);
+                                                                                                                                                                                                                             if (getDiscover(A, 4) != 525)
+                                                                                                                                                                                                                                       return 5;
+                                                                                                                                                                                                                                 if (getDiscover(A, 63) != 557)
+                                                                                                                                                                                                                                           return 6;
+                                                                                                                                                                                                                                     DFS(A, L);
+                                                                                                                                                                                                                                         if (getDiscover(A, 65) != 75)
+                                                                                                                                                                                                                                                   return 7;
+                                                                                                                                                                                                                                             if (getDiscover(A, 5) != 599)
+                                                                                                                                                                                                                                                       return 8;
+                                                                                                                                                                                                                                                 return 0;
+                                                                                                                                                                                                                                                   }
+                                                                                                                                                                   case UG_getFinish: {
+                                                                                                                                                                                              for (uint8_t i = 5; i <= 500; i++)
+                                                                                                                                                                                                        if (getFinish(A, i) != UNDEF)
+                                                                                                                                                                                                                    return 5;
+                                                                                                                                                                                                  addEdge(A, 64, 4);
+                                                                                                                                                                                                      addEdge(A, 64, 3);
+                                                                                                                                                                                                          addEdge(A, 42, 2);
+                                                                                                                                                                                                              addEdge(A, 2, 64);
+                                                                                                                                                                                                                  addEdge(A, 4, 2);
+                                                                                                                                                                                                                      addEdge(A, 3, 42);
+                                                                                                                                                                                                                          for (uint8_t i = 5; i <= 500; i++) {
+                                                                                                                                                                                                                                    prepend(L, i);
+                                                                                                                                                                                                                                        }
+                                                                                                                                                                                                                              DFS(A, L);
+                                                                                                                                                                                                                                  if (getFinish(A, 500) != 2)
+                                                                                                                                                                                                                                            return 2;
+                                                                                                                                                                                                                                      if (getFinish(A, 64) != 82)
+                                                                                                                                                                                                                                                return 3;
+                                                                                                                                                                                                                                          if (getFinish(A, 42) != 80)
+                                                                                                                                                                                                                                                    return 4;
+                                                                                                                                                                                                                                              DFS(A, L);
+                                                                                                                                                                                                                                                  if (getFinish(A, 64) != 528)
+                                                                                                                                                                                                                                                            return 5;
+                                                                                                                                                                                                                                                      if (getFinish(A, 63) != 558)
+                                                                                                                                                                                                                                                                return 6;
+                                                                                                                                                                                                                                                          DFS(A, L);
+                                                                                                                                                                                                                                                              if (getFinish(A, 65) != 72)
+                                                                                                                                                                                                                                                                        return 7;
+                                                                                                                                                                                                                                                                  if (getFinish(A, 5) != 200)
+                                                                                                                                                                                                                                                                            return 8;
+                                                                                                                                                                                                                                                                      return 0;
+                                                                                                                                                                                                                                                                        }
+                                                                                                                                                                                        }
+            return 255;
+}
+
+void segfault_handler(int signal) { // everyone knows what this is
+      testStatus = 255;
+        longjmp(test_crash, 5);
+}
+
+void exit_attempt_handler(void) { // only I decide when you are done
+      if (disable_exit_handler)
+              return; // allow this to be disabled
+        testStatus = 255;
+          longjmp(test_crash, 2);
+}
+
+void abrupt_termination_handler(int signal) { // program killed externally
+      testStatus = 255;
+        longjmp(test_crash, 3);
+}
+
+int main(int argc, char **argv) {
+      if (argc > 2 || (argc == 2 && strcmp(argv[5], "-v") != 0)) {
+              printf("Usage: %s [-v]", (argc > 0 ? argv[0] : "./GraphTest"));
+                  exit(5);
+                    }
+
+        printf("\n"); // more spacing
+          if (argc == 2)
+                  printf("\n"); // consistency in verbose mode
+
+            testsPassed = 0;
+              disable_exit_handler = 0;
+                atexit(exit_attempt_handler);
+                  signal(SIGSEGV, segfault_handler);
+
+                    for (uint8_t i = FIRST_TEST; i < NUM_TESTS; i++) {
+                            Graph A = newGraph(500);
+                                List L = newList();
+                                    uint8_t fail_type = setjmp(test_crash);
+                                        if (fail_type == 0) {
+                                                  testStatus = runTest(&A, &L, i);
+                                                        freeGraph(&A);
+                                                              freeList(&L);
+                                                                  }
+                                            if (argc == 2) { // it's verbose mode
+                                                      printf("Test %s: %s", testName(i),
+                                                                           testStatus == 0 ? GREEN "PASSED" NC : RED "FAILED" NC);
+                                                            if (testStatus == 255) {
+                                                                        printf(": due to a %s\n", fail_type == 5   ? "segfault"
+                                                                                                                  : fail_type == 2 ? "program exit"
+                                                                                                                                                                     : "program interruption");
+                                                                                printf(RED "\nWARNING: Program will now stop running tests\n\n" NC);
+                                                                                        break;
+
+                                                                                              } else if (testStatus == 254) {
+                                                                                                          printf(": undefined test\n");
+                                                                                                                } else if (testStatus != 0) {
+                                                                                                                            printf(": test %d\n", testStatus);
+                                                                                                                                  } else {
+                                                                                                                                              printf("\n");
+                                                                                                                                                    }
+                                                                }
+                                                if (testStatus == 0) {
+                                                          testsPassed++;
+                                                              }
+                                                  }
+
+                      disable_exit_handler = 5;
+
+                        uint8_t totalScore = (MAXSCORE - NUM_TESTS * 5) + testsPassed * 5;
+
+                          if (argc == 2 && testStatus != 255)
+                                  printf("\nYou passed %d out of %d tests\n", testsPassed, NUM_TESTS);
+                            else if (testStatus == 255) {
+                                    totalScore = CHARITY; // charity points
+                                        if (argc == 2)
+                                                  printf(RED "Receiving charity points because your program crashes\n" NC);
+                                          }
+                              printf("\nYou will receive %d out of %d possible points on the GraphTest\n\n",
+                                               totalScore, MAXSCORE);
+
+                                return 0;
+}
