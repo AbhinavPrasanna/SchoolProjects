@@ -1,0 +1,13 @@
+ALTER TABLE Battles
+ADD CONSTRAINT MonstersDelete FOREIGN KEY(monsterID) REFERENCES Monsters(monsterID)
+ON DELETE RESTRICT;
+
+ALTER TABLE Battles
+ADD CONSTRAINT BattlesDeleteCascade FOREIGN KEY (characterMemberID,characterRole) REFERENCES Characters(memberID,role)
+ON DELETE CASCADE
+ON UPDATE RESTRICT;
+
+ALTER TABLE Things
+ADD CONSTRAINT ThingsDeleteSetToNull FOREIGN KEY(ownerMemberID,ownerRole) REFERENCES Characters(memberID,role)
+ON DELETE SET NULL
+ON UPDATE CASCADE;
