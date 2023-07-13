@@ -1,0 +1,2 @@
+This assignment is teaching students about cryptography. The numtheory file has all the various numtheory functions neccessary for RSA methods in order to make public and private keys, read and write keys, and encrypt and decrypt files.
+We create testing harnesses keygen to generate keys, encrypt to encrypt files, and decrypt to decrypt files. We use the randstate file to generate a random seed and the gmp library to use randstate and mpz_t variable with its own accessor methods and arithmetic operations.
