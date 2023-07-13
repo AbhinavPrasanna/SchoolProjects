@@ -1,0 +1,81 @@
+#!/usr/local/bin/python3
+# your python code starts here
+import sys
+class Graph:
+    def __init__(self, vertices):
+        self.vertices = vertices
+        self.graph = []
+
+    def add_edge(self, x, y, w,i):
+        self.graph.append([x, y, w, i])
+        
+    def find(self, par, u):
+        if par[u] == u:
+            return u
+        return self.find(par, par[u])
+
+    def apply_union(self, parent, rank, x, y):
+        if rank[self.find(parent, x)] < rank[self.find(parent, y)]:
+            parent[self.find(parent, x)] = self.find(parent, y)
+        elif rank[self.find(parent, x)] > rank[self.find(parent, y)]:
+            parent[self.find(parent, y)] = self.find(parent, x)
+        else:
+            parent[self.find(parent, y)] = self.find(parent, x)
+            rank[self.find(parent, x)] += 1
+
+    #  Applying Kruskal algorithm
+    def kruskal_algo(self,out):
+        par = []
+        rk = []
+        res= []
+        i, e = 0, 0
+        self.graph = sorted(self.graph, key=lambda item: item[2])
+        summ = 0
+        while i in range(self.vertices):
+            rk.append(0)
+            par.append(i)
+            rk.append(0)
+            i +=1
+        while e < self.vertices - 1:
+            u, v, w, j = self.graph[i]
+            i = i + 1
+            x = self.find(par, u)
+            y = self.find(par, v)
+            if x != y:
+                e = e + 1
+                res.append([u, v, w, j])
+                self.apply_union(par, rk, x, y)
+        for u, v, weight,i in res:
+            summ += weight
+            text = "\t{line:d}: ({x:d}, {y:d}) {w:0.1f}\n"
+            out.write(text.format(line=i+1,x=u+1,y=v+1,w=float(weight)))
+        txt = "Total Weight = {w:0.2f}\n"
+        out.write(txt.format(w=float(summ)))
+
+infile = open(sys.argv[1],'r')
+outfile = open(sys.argv[2],'w+')
+linenumber = 0
+finalnumber = 0
+if not infile:
+    print("infile was not read properly!")
+if len(sys.argv) > 3:
+    print("Wrong amount of arguments!")
+if not outfile:
+    print("outfile not read properly!")
+while True:
+    str = infile.readline()
+    if not str:
+        break
+    if linenumber == 0:
+       g = Graph(int(str))
+    elif linenumber == 1:
+        finalnumber = int(str)
+    else:
+        for i in range(0,finalnumber):
+            if str != "\n":
+                elements = str.split(" ")
+                print(elements)
+                g.add_edge(int(elements[0])-1,int(elements[1])-1,int(elements[2]),linenumber-2)
+    linenumber += 1
+g.kruskal_algo(outfile)
+outfile.close()
