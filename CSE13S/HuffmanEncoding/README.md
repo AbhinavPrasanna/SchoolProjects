@@ -1,0 +1,1 @@
+We must use the data structures created with stack, pq, node, huffman, and io to work on the encode and decoder. The encoder uses pq, huffman, and io to encode different files into one file. The decoder uses stack and node to decode the file into multiple files.  
