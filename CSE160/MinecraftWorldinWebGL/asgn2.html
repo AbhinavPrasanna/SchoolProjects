@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blocky Animal:Abhinav Prasanna</title>
+</head>
+<body onload = "main()">
+    <canvas id="webgl" width="400" height="400" style="border:1px solid #000000;">
+        Please use a browser that supports "canvas"
+     </canvas>
+<br></br>
+<label for = "cam">Adjust the Camera Angle Here: </label>
+<input type = "range" id="cam" name="cam" min="0" max="360" value="0" class = "slider">
+<br></br>
+<label for = "joint1">Front Legs Move: </label>
+<input type = "range" id="joint1" name="joint1" min="-25" max="25" value="0" class = "slider">
+<br></br>
+<label for = "joint2">Move Head: </label>
+<input type = "range" id="joint2" name="joint2" min="-45" max="45" value="0" class = "slider">
+<br></br>
+<label for = "joint4">Back Legs Move: </label>
+<input type = "range" id="joint4" name="joint4" min="-10" max="10" value="0" class = "slider">
+<br></br>
+<label for = "animation">Adjust Animation: </label>
+<button type="button" id="on"> ON </button>
+<button type="button" id="off"> OFF </button>
+
+<script src="lib/webgl-utils.js"></script>
+<script src="lib/webgl-debug.js"></script>
+<script src="lib/cuon-utils.js"></script>
+<script src="lib/cuon-matrix.js"></script>
+<script src="Cube.js"></script>
+<script src="Camera.js"></script>
+<script src="asgn2.js"></script>
+</body>
+</html>

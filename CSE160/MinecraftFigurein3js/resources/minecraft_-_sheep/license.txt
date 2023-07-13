@@ -1,0 +1,11 @@
+Model Information:
+* title:	Minecraft - Sheep
+* source:	https://sketchfab.com/3d-models/minecraft-sheep-5f06884e82394845bb1a4706a7ef548e
+* author:	Vincent Yanez (https://sketchfab.com/vinceyanez)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "Minecraft - Sheep" (https://sketchfab.com/3d-models/minecraft-sheep-5f06884e82394845bb1a4706a7ef548e) by Vincent Yanez (https://sketchfab.com/vinceyanez) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
